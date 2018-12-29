@@ -9,13 +9,13 @@ import Sound from 'react-native-sound'
 
 const alert = require('../../assets/sounds/alert.wav')
 
-class EMOMScreen extends Component{
+class IsometriaScreen extends Component{
     state = {
         keyboardIsVisible: false,
 
-        alerts: [0, 15],
+        goal: 1,
         countdown: 1,
-        time: '2',
+        time: '20',
 
         isRunning: false,
         countdownValue: 0,
@@ -38,14 +38,9 @@ class EMOMScreen extends Component{
         this.kbHide.remove()
     }
     playAlert = () => {
-        const resto = this.state.count % 60
-        if(this.state.alerts.indexOf(resto) >=0){
+        const resto = 0
+        if(resto>=55 && resto <60){
             this.alert.play()
-        }
-        if(this.state.countdown === 1){
-            if(resto>=55 && resto <60){
-                this.alert.play()
-            }
         }
     }
     stop = () => {
@@ -58,49 +53,42 @@ class EMOMScreen extends Component{
     play = () => {
         this.setState({
             count: 0,
-            countdownValue: this.state.countdown === 1 ? 5 : 0
+            countdownValue: 5
         })
         this.setState({ isRunning: true })
         const count = () => {
             this.setState({ count: this.state.count + 1 }, () => {
                 this.playAlert()
-                if(this.state.count === parseInt(this.state.time)*60){
+                if(this.state.count === parseInt(this.state.time)){
                     clearInterval(this.countTimer)
                 }
             })
         }
-        // checar countdown
-        if(this.state.countdown === 1){
+
+        this.alert.play()
+        this.countdownTimer = setInterval(() => {
             this.alert.play()
-            this.countdownTimer = setInterval(() => {
-                this.alert.play()
-                this.setState({ countdownValue: this.state.countdownValue - 1 }, () => {
-                    if(this.state.countdownValue === 0){
-                        clearInterval(this.countdownTimer)
-                        this.countTimer = setInterval(count, 1000)
-                    }
-                })
-            }, 1000)
-        }else{
-            this.countTimer = setInterval(count, 1000)
-        }
-        // começar contar
-        // checar terminou
+            this.setState({ countdownValue: this.state.countdownValue - 1 }, () => {
+                if(this.state.countdownValue === 0){
+                    clearInterval(this.countdownTimer)
+                    this.countTimer = setInterval(count, 1000)
+                }
+            })
+        }, 1000)
+
     }
     render(){
         if(this.state.isRunning){
-            const percMinute = parseInt(((this.state.count % 60)/60)*100)
-            const percTime = parseInt(((this.state.count/60) / parseInt(this.state.time))*100)
+            const percMinute = parseInt(((this.state.count)/parseInt(this.state.time))*100)
             return(
                 <BackgroundProgress percentage={percMinute}>
                     <View style={{ flex: 1, justifyContent: 'center' }}>
                         <View style={{flex: 1}}>
-                        <Title title='EMOM' subTitle='Every Minute On the Minute' style={{ paddingTop: this.state.keyboardIsVisible ? 20 : 100 }} />
+                        <Title title='Isometria' style={{ paddingTop: this.state.keyboardIsVisible ? 20 : 100 }} />
                         </View>
                         <View style={{flex: 1, justifyContent: 'center'}}>
                             <Time time={this.state.count} />
-                            <ProgressBar percentage={percTime} />
-                            <Time time={parseInt(this.state.time)*60-this.state.count} type='text2' appendedText={' restantes'} />
+                            <Time time={parseInt(this.state.time)-this.state.count} type='text2' appendedText={' restantes'} />
                         </View>
                         <View style={{flex: 1, justifyContent: 'flex-end'}}>
                             {
@@ -119,40 +107,26 @@ class EMOMScreen extends Component{
         return(
             <KeyboardAvoidingView style={{flex: 1}} behavior='padding'>
                 <ScrollView style={styles.container}>
-                    <Title title='EMOM' subTitle='Every Minute On the Minute' style={{ paddingTop: this.state.keyboardIsVisible ? 20 : 200 }} />
+                    <Title title='Isometria' style={{ paddingTop: this.state.keyboardIsVisible ? 20 : 200 }} />
                     <Image style={{ alignSelf: 'center', marginBottom: 17 }} source={require('../../assets/settings-cog.png')} />
                     <Select
-                        label='Alertas:'
-                        current={this.state.alerts}
+                        label='Objetivo:'
+                        current={this.state.goal}
                         options={[
                             {
                                 id: 0,
-                                label: '0s'
+                                label: 'livre'
                             }, 
                             {
-                                id: 15,
-                                label: '15s'
-                            }, 
-                            {
-                                id: 30,
-                                label: '30s'
-                            }, 
-                            {
-                                id: 45,
-                                label: '45s'
+                                id: 1,
+                                label: 'bater tempo'
                             }
                         ]}
-                        onSelect={ opt => this.setState({ alerts: opt })}
+                        onSelect={ opt => this.setState({ goal: opt })}
                     />
-                    <Select
-                        label='Contagem regressiva:'
-                        current={this.state.countdown}
-                        options={[{ id: 1, label: 'sim' }, {id: 0, label: 'não' }]}
-                        onSelect={ opt => this.setState({ countdown: opt })}
-                    />
-                    <Text style={styles.label}>Quantos minutos:</Text>
+                    
+                    <Text style={styles.label}>Quantos segundos:</Text>
                     <TextInput style={styles.input} keyboardType='numeric' value={this.state.time} onChangeText={ text => this.setState({ time: text })} />
-                    <Text style={styles.label}>minutos</Text>
                     <TouchableOpacity style={{alignSelf: 'center'}} onPress={this.play}>
                         <Image source={require('../../assets/btn-play.png')} />
                     </TouchableOpacity>
@@ -162,7 +136,7 @@ class EMOMScreen extends Component{
         )
     }
 }
-EMOMScreen.navigationOptions = {
+IsometriaScreen.navigationOptions = {
     header: null
 }
 const styles = StyleSheet.create({
@@ -190,4 +164,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default EMOMScreen
+export default IsometriaScreen
