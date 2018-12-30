@@ -10,7 +10,7 @@ import KeepAwake from 'react-native-keep-awake'
 
 const alert = require('../../assets/sounds/alert.wav')
 
-class EMOMScreen extends Component{
+class AMRAPScreen extends Component{
     state = {
         keyboardIsVisible: false,
 
@@ -21,7 +21,8 @@ class EMOMScreen extends Component{
         paused: false,
         isRunning: false,
         countdownValue: 0,
-        count: 0
+        count: 0,
+        repetitions: 0
     }
     componentDidMount(){
         Sound.setCategory('Playback', true)
@@ -65,6 +66,8 @@ class EMOMScreen extends Component{
         }
     }
     stop = () => {
+        //clearInterval(this.countdownTimer)
+        //clearInterval(this.countTimer)
         this.setState({
             paused: !this.state.paused
         })
@@ -72,6 +75,7 @@ class EMOMScreen extends Component{
     play = () => {
         this.setState({
             paused: false,
+            repetitions: 0,
             count: 0,
             countdownValue: this.state.countdown === 1 ? 5 : 0
         })
@@ -108,18 +112,43 @@ class EMOMScreen extends Component{
         // começar contar
         // checar terminou
     }
+    decrement = () => {
+        if(this.state.repetitions > 0){
+            this.setState({
+                repetitions: this.state.repetitions - 1
+            })
+        }
+    }
+    increment = () => {
+        this.setState({
+            repetitions: this.state.repetitions+1
+        })
+    }
     render(){
         if(this.state.isRunning){
             const percMinute = parseInt(((this.state.count % 60)/60)*100)
             const percTime = parseInt(((this.state.count/60) / parseInt(this.state.time))*100)
+            const media = this.state.repetitions > 0 ? this.state.count / this.state.repetitions : 0
+            const estimated = media > 0 ? Math.floor((parseInt(this.state.time)*60)/media) : 0
             const opacity = !this.state.paused ? 0.6 : 1
             return(
                 <BackgroundProgress percentage={percMinute}>
                     <View style={{ flex: 1, justifyContent: 'center' }}>
                         <KeepAwake />
                         <View style={{flex: 1}}>
-                        <Title title='EMOM' subTitle='Every Minute On the Minute' style={{ paddingTop: this.state.keyboardIsVisible ? 20 : 100 }} />
+                            <Title title='AMRAP' subTitle='As Many Repetitions As Possible' style={{ paddingTop: this.state.keyboardIsVisible ? 20 : 100 }} />
                         </View>
+                        { this.state.repetitions > 0 ? 
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={{flex: 1}}>
+                                <Time time={media} type='text3' />
+                                <Text style={styles.subTitle}>por repetição</Text>
+                            </View>
+                            <View style={{flex: 1}}>
+                                <Text style={styles.count}>{estimated}</Text>
+                                <Text style={styles.subTitle}>repetições</Text>
+                            </View>
+                        </View> : null }
                         <View style={{flex: 1, justifyContent: 'center'}}>
                             <Time time={this.state.count} />
                             <ProgressBar percentage={percTime} />
@@ -129,7 +158,16 @@ class EMOMScreen extends Component{
                             {
                                 this.state.countdownValue > 0 ?
                                 <Text style={styles.countdown}>{this.state.countdownValue}</Text>
-                                : null
+                                :
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-evenly'}}>
+                                    <TouchableOpacity onPress={this.decrement}>
+                                        <Text style={styles.countdown}>-</Text>
+                                    </TouchableOpacity>
+                                    <Text style={styles.countdown}>{this.state.repetitions}</Text>
+                                    <TouchableOpacity onPress={this.increment}>
+                                        <Text style={styles.countdown}>+</Text>
+                                    </TouchableOpacity>
+                                </View>
                             }
                             <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginBottom: 40 }}>
                                 <TouchableOpacity style={{alignSelf: 'center' }} onPress={this.back}>
@@ -154,7 +192,7 @@ class EMOMScreen extends Component{
         return(
             <KeyboardAvoidingView style={{flex: 1}} behavior='padding'>
                 <ScrollView style={styles.container}>
-                    <Title title='EMOM' subTitle='Every Minute On the Minute' style={{ paddingTop: this.state.keyboardIsVisible ? 20 : 200 }} />
+                    <Title title='AMRAP' subTitle='As Many Repetitions As Possible' style={{ paddingTop: this.state.keyboardIsVisible ? 20 : 200 }} />
                     <Image style={{ alignSelf: 'center', marginBottom: 17 }} source={require('../../assets/settings-cog.png')} />
                     <Select
                         label='Alertas:'
@@ -202,7 +240,7 @@ class EMOMScreen extends Component{
         )
     }
 }
-EMOMScreen.navigationOptions = {
+AMRAPScreen.navigationOptions = {
     header: null
 }
 const styles = StyleSheet.create({
@@ -227,7 +265,19 @@ const styles = StyleSheet.create({
         fontSize: 144,
         color: 'white',
         textAlign: 'center'
+    },
+    count:{
+        fontFamily: 'Ubuntu-Bold',
+        fontSize: 36,
+        color: 'white',
+        textAlign: 'center'
+    },
+    subTitle:{
+        fontFamily: 'Ubuntu-Bold',
+        fontSize: 11,
+        textAlign: 'center',
+        color: 'white'
     }
 })
 
-export default EMOMScreen
+export default AMRAPScreen
